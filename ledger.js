@@ -56,11 +56,11 @@
     </section>
     <section class="f-pane" aria-label="People">
       <div class="l-top">
-        <div class="l-tabs" id="lChips" role="group" aria-label="Filter">
+        <div class="l-tabs" id="lChips" role="group" aria-label="Filter"><span class="l-pill" id="lPill"></span>
           <button class="l-tab" type="button" data-f="all" aria-pressed="true">All</button>
-          <button class="l-tab" type="button" data-f="rec" aria-pressed="false">To receive</button>
-          <button class="l-tab" type="button" data-f="giv" aria-pressed="false">To give</button>
-          <button class="l-tab" type="button" data-f="set" aria-pressed="false">Settled</button>
+          <button class="l-tab" type="button" data-f="rec" aria-pressed="false">Credit</button>
+          <button class="l-tab" type="button" data-f="giv" aria-pressed="false">Debit</button>
+          <button class="l-tab" type="button" data-f="set" aria-pressed="false">Closed</button>
         </div>
         <button class="l-sbtn" id="lFind" type="button" aria-label="Search people" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
       </div>
@@ -106,7 +106,7 @@
     const rows = S.people.filter(ok).sort((a, b) => (bal(a) === 0) - (bal(b) === 0) || Math.abs(bal(b)) - Math.abs(bal(a)));
     if (!rows.length) { list.innerHTML = `<p class="pg-empty">${q ? 'No one found.' : 'Nothing here.'}</p>`; return; }
     const n = rows.length, pend = rows.filter(p => bal(p) !== 0).length;
-    const head = { all: 'People', rec: 'To receive', giv: 'To give', set: 'Settled' }[flt];
+    const head = { all: 'People', rec: 'Credit', giv: 'Debit', set: 'Closed' }[flt];
     const sub = flt === 'all' ? (pend ? `${pend} pending` : 'All settled') : `${n} ${n === 1 ? 'person' : 'people'}`;
     list.innerHTML = `<section class="group"><header class="group-head"><h3>${head}</h3><span>${sub}</span></header><ul class="tasks">${rows.map(p => {
       const b = bal(p), cls = b > 0 ? 'pos' : b < 0 ? 'neg' : 'zero';
@@ -119,8 +119,22 @@
     if (!c) return;
     snd(); flt = c.dataset.f;
     el.querySelectorAll('.l-tab').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+    place();
     render();
   });
+  // slide the white pill under the active filter (measured, so it hugs each label exactly)
+  const pill = $('lPill'), tabsEl = $('lChips');
+  let placed = false;
+  function place() {
+    const a = tabsEl.querySelector('.l-tab[aria-pressed="true"]');
+    if (!a || !a.offsetWidth) return;                       // screen hidden: nothing to measure yet
+    if (!placed) { pill.style.transition = 'none'; }        // first real measurement: jump into place, don't slide in from the left
+    pill.style.width = a.offsetWidth + 'px';
+    pill.style.transform = `translateX(${a.offsetLeft}px)`;
+    if (!placed) { void pill.offsetWidth; pill.style.transition = ''; placed = true; }
+  }
+  if (window.ResizeObserver) new ResizeObserver(place).observe(tabsEl);
+  requestAnimationFrame(place);
   const findBox = $('lFindBox'), findIn = $('lSearch'), findBtn = $('lFind');
   function find(on) {
     findBox.classList.toggle('open', on);
