@@ -14,7 +14,7 @@
   }
   function show() {
     cur = screens.find(s => !s.hidden) || null;
-    body.classList.toggle('hero-on', !!cur);
+    body.classList.toggle('hero-on', !!cur && !cur.classList.contains('pg-screen'));   // Ledger / Notes are light screens: normal header
     sync();
   }
   screens.forEach(s => s.addEventListener('scroll', () => { if (s === cur) sync(); }, { passive: true }));
