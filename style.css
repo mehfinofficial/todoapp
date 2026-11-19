@@ -231,12 +231,22 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+  }
+  /* the frosted look lives on its own layer so it can fade (backdrop-filter/gradients can't transition on the header itself) */
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background: linear-gradient(rgba(255,255,255,.7), rgba(255,255,255,.45));
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
     box-shadow:
       inset 0 -1px 0 rgba(var(--shadow), .07),
       0 4px 20px rgba(var(--shadow), .06);
+    opacity: 1;
+    transition: opacity .25s ease;
   }
   .title {
     margin: 0;
@@ -318,7 +328,7 @@
   .t-pane .days { margin: 0 0 18px; }
   /* header: see-through with white ink over the hero; back to the frosted bar once the pane scrolls under it (hero.js sets the classes) */
   .title { transition: color .25s; }
-  body.hero-on:not(.hero-solid) .header { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+  body.hero-on:not(.hero-solid) .header::before { opacity: 0; }
   body.hero-on:not(.hero-solid) .title { color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,.25); }
   body.hero-on:not(.hero-solid) .bell svg { filter: brightness(0) invert(1); }
 
@@ -949,4 +959,21 @@
   @media (hover: none), (max-width: 768px) {
     * { scrollbar-width: none; -ms-overflow-style: none; }
     *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  }
+
+  /* ---------- Window Controls Overlay (installed desktop PWA, Chromium) ----------
+     Manifest: "display_override": ["window-controls-overlay"]. The header extends into the
+     title bar, so make it draggable and keep its content clear of the min/max/close buttons.
+     Ignored everywhere else (phones, Safari, Firefox, normal browser tabs). */
+  @media (display-mode: window-controls-overlay) {
+    .header {
+      -webkit-app-region: drag;
+      app-region: drag;
+      padding-left: max(18px, calc((100vw - 520px) / 2 + 8px), calc(env(titlebar-area-x, 0px) + 12px));
+      padding-right: max(18px, calc((100vw - 520px) / 2 + 8px), calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px));
+    }
+    .header button, .header .actions {
+      -webkit-app-region: no-drag;
+      app-region: no-drag;
+    }
   }

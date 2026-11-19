@@ -1,6 +1,6 @@
 // Mint service worker: precache the app shell, then stale-while-revalidate for everything else.
 // Bump VERSION when you want to force-refresh the shell.
-const VERSION = 'mint-v3';
+const VERSION = 'mint-v6';
 const SHELL = [
   './', 'index.html', 'style.css', 'finance.css', 'pages.css',
   'main.js', 'finance.js', 'ledger.js', 'notes.js', 'hero.js', 'sounds.js',
